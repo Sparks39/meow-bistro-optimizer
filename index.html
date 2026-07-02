@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meow Bistro! Recipe Optimizer</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header>🍳 Recipe Optimizer</header>
+
+    <nav>
+      <button id="inventoryTab" class="tab active">📦 Inventory</button>
+      <button id="resultsTab" class="tab">🏆 Results</button>
+    </nav>
+
+    <main>
+      <section id="inventoryPage" class="page active">
+        <div id="ingredientGrid" class="grid"></div>
+
+        <button id="calculateButton" class="actionButton">
+          🧮 Calculate Best Recipes
+        </button>
+
+        <button id="resetButton" class="actionButton">
+          🔄 Reset Inventory
+        </button>
+      </section>
+
+      <section id="resultsPage" class="page">
+        <div class="resultCard">
+          <h2>Results</h2>
+          <p>Your optimized recipes will appear here.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
