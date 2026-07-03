@@ -93,6 +93,7 @@ main {
   box-shadow: var(--shadow);
 
   padding: 14px;
+
 }
 
 .card h3 {
@@ -107,10 +108,14 @@ main {
   display: flex;
 
   justify-content: space-between;
+  flex-direction: column;
 
   align-items: center;
 
   margin: 10px 0;
+
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .counter {

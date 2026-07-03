@@ -139,7 +139,6 @@ function hasIngredients(recipe, currentInv) {
 
 const sortedRecipes = [...recipes].sort((a, b) => b.baseGold - a.baseGold);
 
-// Rekursion gibt nun ein Objekt zurück: { gold: X, crafts: [...] }
 function getBestGold(recipeIndex, currentInv) {
   if (recipeIndex >= sortedRecipes.length) {
     return { gold: 0, crafts: [] };
@@ -156,12 +155,31 @@ function getBestGold(recipeIndex, currentInv) {
     const usedQualities = removeIngredients(recipe, currentInv);
     let currentRecipeGold = foodGradeToGold(recipe, usedQualities);
 
+    // Zählen, wie viele "delicious" Zutaten für das Rezept benutzt wurden
+    let deliciousCount = 0;
+    Object.keys(recipe.requires).forEach(ing => {
+      if (usedQualities[ing] === "delicious") {
+        deliciousCount++;
+      }
+    });
+
+    // Bestimme das Label anhand der verbrauchten Delicious-Menge
+    let gradeLabel = "Normal";
+    if (deliciousCount === 1) gradeLabel = "Delicious";
+    if (deliciousCount === 2) gradeLabel = "Very Delicious";
+
     // Weiter auf demselben Index kochen
     let nextResult = getBestGold(recipeIndex, currentInv);
     
     resultWith.gold = currentRecipeGold + nextResult.gold;
-    // Das aktuelle Rezept an die Liste der nachfolgenden Crafts anfügen
-    resultWith.crafts = [{ id: recipe.id, emoji: recipe.emoji, gold: currentRecipeGold }, ...nextResult.crafts];
+    
+    // Wir hängen das Rezept samt seiner errechneten Qualitätsstufe an
+    resultWith.crafts = [{ 
+      id: recipe.id, 
+      emoji: recipe.emoji, 
+      gold: currentRecipeGold,
+      grade: gradeLabel 
+    }, ...nextResult.crafts];
     
     addIngredients(currentInv, recipe, usedQualities);
   }
@@ -207,23 +225,41 @@ function calculateOptimalRecipes() {
   // Holt das Ergebnis-Objekt ab
   let result = getBestGold(0, invClone);
 
-  // Komprimiert die einzelnen Kochschritte in eine "X-mal Rezept"-Zusammenfassung
+  // Komprimiert die einzelnen Kochschritte in eine Zusammenfassung (Name + Qualitätsstufe)
   let summary = {};
   result.crafts.forEach(craft => {
-    if (!summary[craft.id]) {
-      summary[craft.id] = { count: 0, emoji: craft.emoji, totalGold: 0 };
+    let uniqueKey = `${craft.id}_${craft.grade}`;
+    
+    if (!summary[uniqueKey]) {
+      summary[uniqueKey] = { 
+        name: craft.id, 
+        grade: craft.grade, 
+        count: 0, 
+        emoji: craft.emoji, 
+        totalGold: 0 
+      };
     }
-    summary[craft.id].count++;
-    summary[craft.id].totalGold += craft.gold;
+    summary[uniqueKey].count++;
+    summary[uniqueKey].totalGold += craft.gold;
   });
 
-  // Generiert das HTML für die Liste der gekochten Rezepte
+  // Generiert das HTML für die Liste der gekochten Rezepte mit farbigen Labels
   let recipesHtml = "";
-  Object.keys(summary).forEach(recipeId => {
-    let item = summary[recipeId];
+  Object.keys(summary).forEach(key => {
+    let item = summary[key];
+    
+    let labelColor = "#95a5a6"; // Grau für Normal
+    if (item.grade === "Delicious") labelColor = "#f39c12"; // Orange
+    if (item.grade === "Very Delicious") labelColor = "#e84393"; // Pink
+
     recipesHtml += `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 1.1em;">
-        <div><strong>${item.count}x</strong> ${item.emoji} ${recipeId}</div>
+        <div>
+          <strong>${item.count}x</strong> ${item.emoji} ${item.name}
+          <span style="font-size: 0.75em; padding: 2px 6px; border-radius: 4px; color: white; background-color: ${labelColor}; margin-left: 5px; font-weight: bold;">
+            ${item.grade}
+          </span>
+        </div>
         <div style="color: #27ae60; font-weight: bold;">+${item.totalGold} Gold</div>
       </div>
     `;
@@ -255,4 +291,4 @@ function calculateOptimalRecipes() {
   resTab.click();
 }
 
-document.getElementById("calculateButton").onclick = calculateOptimalRecipes; 
+document.getElementById("calculateButton").onclick = calculateOptimalRecipes;
