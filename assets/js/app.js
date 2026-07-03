@@ -255,4 +255,4 @@ function calculateOptimalRecipes() {
   resTab.click();
 }
 
-document.getElementById("calculateButton").onclick = calculateOptimalRecipes;
+document.getElementById("calculateButton").onclick = calculateOptimalRecipes; 
